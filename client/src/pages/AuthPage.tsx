@@ -19,7 +19,7 @@ const initialState = {
     success: false,
 }
 
-export const AdminAuthPage: React.FC = () => {
+export const AuthPage: React.FC = () => {
     const {loading, request} = useHttp();
     const [form, setForm] = useState<AuthForm>(initialState);
     const navigate = useNavigate();
@@ -31,7 +31,7 @@ export const AdminAuthPage: React.FC = () => {
 
         if (await auth()) {
             setForm({...form, success: true});
-            navigate('./board', {
+            navigate('/admin', {
                 state: {admin: true}
             });
         } else {
