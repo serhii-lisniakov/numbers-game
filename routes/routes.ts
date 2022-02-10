@@ -28,6 +28,8 @@ router.post('/send-invites', async (req: { body: any; }, res: Res) => {
     if (!req.body) {
         return BadRequest(res);
     }
+    console.log(req?.body)
+    res.status(200).json({message: 'Success!'});
 })
 
 module.exports = router;

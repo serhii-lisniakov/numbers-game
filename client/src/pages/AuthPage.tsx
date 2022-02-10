@@ -4,6 +4,7 @@ import {LayoutWrapper} from "../components/Layout";
 import styled from "styled-components";
 import {MessageBox} from "../components/MessageBox";
 import {useNavigate} from "react-router-dom";
+import {Input} from "../components/Input";
 
 type AuthForm = {
     name: string;
@@ -57,7 +58,7 @@ export const AuthPage: React.FC = () => {
         <LayoutWrapper>
             <AuthWrapper>
                 <form onSubmit={signIn}>
-                    <SignButton
+                    <Input
                         disabled={loading}
                         placeholder='Enter your name'
                         isValid={form.isValid}
@@ -65,7 +66,7 @@ export const AuthPage: React.FC = () => {
                         name='name'
                         onChange={changeHandler}
                     />
-                    <SignButton
+                    <Input
                         disabled={loading}
                         placeholder='Password'
                         isValid={form.isValid}
@@ -75,7 +76,7 @@ export const AuthPage: React.FC = () => {
                         autoComplete='false'
                         onChange={changeHandler}
                     />
-                    <SignButton
+                    <Input
                         disabled={loading || !(form.name && form.password)}
                         value='Sign In'
                         type='submit'
@@ -100,36 +101,4 @@ const AuthWrapper = styled.div`
   justify-content: center;
   align-items: center;
   position: relative;
-`
-const SignButton = styled.input<{ isValid?: boolean }>`
-  display: block;
-  border: 1px solid ${props => props.isValid ? 'inherit' : 'red'};
-  padding: 10px 15px;
-  background: transparent;
-  transition: .3s;
-  cursor: pointer;
-  font-size: 18px;
-  letter-spacing: 1px;
-  margin: 10px 0;
-  outline: none;
-  width: 300px;
-  height: 45px;
-  border-radius: 10px;
-
-  &:focus {
-    border-color: #5d5d5d;
-  }
-
-  &:hover {
-    background: #e0e0e0;
-  }
-
-  &::placeholder {
-    text-transform: uppercase;
-    font-size: 12px;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-  }
 `

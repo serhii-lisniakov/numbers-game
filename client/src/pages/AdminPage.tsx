@@ -3,38 +3,48 @@ import {Navigate, useLocation} from "react-router-dom";
 import {LayoutWrapper} from "../components/Layout";
 import styled from "styled-components";
 import {Header} from "../components/Header";
+import {Rounds} from "../models/Rounds";
+import {Input} from "../components/Input";
+import {useHttp} from "../hooks/http.hook";
 
 type Player = {
     name: string;
     email: string;
-    r1: string;
-    r2: string;
-    r3: string;
-    r4: string;
+    r1: Rounds;
+    r2: Rounds;
+    r3: Rounds;
+    r4: Rounds;
 }
 
 type TableRowProps = {
     isHeader?: boolean;
+    player?: Player;
 }
 
 type State = {
     admin: boolean;
-    gamers?: Player[];
+    players?: Player[];
 }
 
 const initialState = {
     name: '',
     email: '',
-    r1: '',
-    r2: '',
-    r3: '',
-    r4: '',
+    r1: Rounds.Grid,
+    r2: Rounds.Grid,
+    r3: Rounds.Grid,
+    r4: Rounds.Grid,
 }
 
-const Player: React.FC<TableRowProps> = ({isHeader}) => {
+const Player: React.FC<TableRowProps> = ({isHeader, player}) => {
     const [form, setForm] = useState<Player>(initialState);
 
-    const changeHandler = (event: any) => setForm({...form, [event.target.name]: event.target.value});
+    const changeHandler = (event: any) => {
+        setForm({...form, [event.target.name]: event.target.value})
+        if (player) {
+            // @ts-ignore
+            player[event.target.name] = event.target.value;
+        }
+    };
 
     const labels = ['Name', 'Email', 'R1', 'R2', 'R3', 'R4']
 
@@ -51,14 +61,13 @@ const Player: React.FC<TableRowProps> = ({isHeader}) => {
             {Object.keys(initialState).map((key, idx) => (
                 <div key={idx}>
                     <span className={'label'}>{labels[idx]}:</span>
-                    {/*{gamer[key as keyof Player]}*/}
                     {idx < 2 ? (
                         <input name={key} value={form[key as keyof Player]} onChange={changeHandler}/>)
                         :
                         <select name={key} value={form[key as keyof Player]} onChange={changeHandler}>
-                            <option>Grid</option>
-                            <option>No Grid</option>
-                            <option>Grid - No Num. 15</option>
+                            <option value={Rounds.Grid}>Grid</option>
+                            <option value={Rounds["No Grid"]}>No Grid</option>
+                            <option value={Rounds["Grid - No Num. 15"]}>Grid - No Num. 15</option>
                         </select>
                     }
                 </div>
@@ -70,17 +79,22 @@ const Player: React.FC<TableRowProps> = ({isHeader}) => {
 export const AdminPage: React.FC = () => {
     const location = useLocation();
     const [players, setPlayers] = useState<Player[]>([]);
+    const {request} = useHttp();
     const isAdmin = (location.state as State)?.admin;
 
     const addPlayer = () => {
-        setPlayers([...players, {
-            name: '',
-            email: '',
-            r1: 'Grid',
-            r2: 'Grid',
-            r3: 'Grid',
-            r4: 'Grid',
-        }])
+        setPlayers([...players, initialState])
+    }
+
+    const start = async () => {
+        try {
+            await request('/api/send-invites', 'POST', {
+                players
+            });
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 
     if (!isAdmin) return <Navigate to="/"/>
@@ -89,12 +103,27 @@ export const AdminPage: React.FC = () => {
             <Container>
                 <Header title={'Admin'}/>
                 <div>
-                    <button onClick={() => addPlayer()}>Add player</button>
+                    <Input
+                        isValid={true}
+                        value='Add Player'
+                        name='name'
+                        type="submit"
+                        onClick={() => addPlayer()}
+                    />
                 </div>
                 <TableWrapper>
                     <Player isHeader={true}/>
-                    {players.map((gamer, i) => (<Player key={i}/>))}
+                    {players.map((player, i) => (<Player key={i} player={player}/>))}
                 </TableWrapper>
+                <div>
+                    <Input
+                        isValid={true}
+                        value='Start Game'
+                        name='name'
+                        type="submit"
+                        onClick={() => start()}
+                    />
+                </div>
             </Container>
         </LayoutWrapper>
     )
@@ -144,7 +173,7 @@ const TableRow = styled.div`
   margin-bottom: 5px;
 
   > div {
-    padding: 10px;
+    padding: 0 10px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -163,6 +192,23 @@ const TableRow = styled.div`
       .label {
         display: inline;
       }
+    }
+  }
+
+  input, select {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 18px;
+    transition: .3s;
+    border-radius: 5px;
+    
+    :hover {
+      background: blanchedalmond;
     }
   }
 
